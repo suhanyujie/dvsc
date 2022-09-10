@@ -1,4 +1,5 @@
 use crate::BoxResult;
+use anyhow::Result as AnyResult;
 use clap::ArgMatches;
 
 #[derive(Debug, Default)]
@@ -42,4 +43,11 @@ pub fn trans_url(url: String) -> String {
 
 pub fn get_new_dl_host() -> &'static str {
     return "vscode.cdn.azure.cn";
+}
+
+pub async fn get_res() -> AnyResult<String> {
+    let default_url = "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64";
+    let resp = reqwest::get(default_url).await?;
+    let new_url = format!("https://{}{}", get_new_dl_host(), resp.url().path());
+    Ok(new_url)
 }
