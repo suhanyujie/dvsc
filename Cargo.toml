@@ -2,6 +2,14 @@
 name = "dvsc"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["Download visual studio code in China", "visual studio code"]
+categories = ["command-line-utilities"]
+readme = "README.md"
+homepage = "https://github.com/suhanyujie/dvsc"
+repository = "https://github.com/suhanyujie/dvsc"
+description = "Help you to Download visual studio code in China"
+documentation = "https://github.com/suhanyujie/dvsc"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
