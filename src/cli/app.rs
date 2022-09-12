@@ -8,7 +8,7 @@ pub struct DvscArgs {
     ori_url: String,
 }
 
-pub const download_dir: &'static str = "~/Downloads";
+// pub const download_dir: &'static str = "~/Downloads";
 
 pub fn app() -> clap::Command<'static> {
     let ori_url_arg = clap::Arg::new("url").value_name("url").index(1);
