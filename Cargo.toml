@@ -19,3 +19,4 @@ clap = "3.2.17"
 hyper = {version = "0.14", features = ["full"] }
 tokio = {version="1.21.0", features = ["full"] }
 reqwest = { version = "0.11", features = ["json"] }
+tokio-test = "0.4.2"
