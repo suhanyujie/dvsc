@@ -1,6 +1,6 @@
 use crate::BoxResult;
 use anyhow::Result as AnyResult;
-use clap::ArgMatches;
+use clap::{Arg, ArgMatches};
 use std::{
     error::Error,
     fmt::format,
@@ -11,14 +11,19 @@ use tokio_test;
 #[derive(Debug, Default)]
 pub struct DvscArgs {
     name: String,
-    ori_url: String,
+    pub is_download: bool,
+    pub ori_url: String,
 }
 
-pub const download_dir: &'static str = "~/Downloads";
+pub const download_dir: &'static str = "Downloads";
 
 pub fn app() -> clap::Command<'static> {
-    let ori_url_arg = clap::Arg::new("url").value_name("url").index(1);
-    let cmd = clap::Command::new("dvsc").arg(ori_url_arg);
+    let ori_url_arg = Arg::new("url").value_name("url").index(2);
+    let download_flag = Arg::new("download").required(false).default_value("false");
+
+    let cmd = clap::Command::new("dvsc")
+        .arg(download_flag)
+        .arg(ori_url_arg);
 
     return cmd;
 }
@@ -29,11 +34,15 @@ pub fn matches() -> ArgMatches {
 
 impl DvscArgs {
     pub fn parse(matches: ArgMatches) -> BoxResult<DvscArgs> {
+        let is_download = matches
+            .value_of("download")
+            .map_or(false, |v| v.parse::<bool>().unwrap_or_default());
         let ori_url = matches.value_of("url").unwrap_or_default();
 
         Ok(DvscArgs {
             name: "dvsc".to_string(),
             ori_url: ori_url.to_string(),
+            is_download,
         })
     }
 
@@ -59,16 +68,16 @@ pub async fn get_res() -> AnyResult<String> {
 }
 
 pub async fn download_vscode(url: &str) -> AnyResult<()> {
-    // let url = "http://127.0.0.1:8080/%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF_%E9%9C%80%E6%B1%82.xlsx";
     let filename = std::path::Path::new(url)
         .file_name()
         .map_or("vscode.deb", |s1| s1.to_str().unwrap());
     match std::env::home_dir() {
         Some(home_dir) => {
+            // dir: ~/Downloads
             let target = format!(
                 "{}/{}/{}",
                 home_dir.to_str().unwrap(),
-                "Downloads/tmp1",
+                download_dir,
                 filename
             );
             // dbg!(&target);
