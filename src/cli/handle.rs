@@ -8,8 +8,8 @@ pub async fn handle_url_arg(args: app::DvscArgs) -> AnyResult<()> {
         res_url = app::get_res().await.expect("err");
     }
     if args.is_download {
-        app::download_vscode(&res_url).await?;
-        println!("Ok，下载完成！");
+        let target_dir = app::download_vscode(&res_url).await?;
+        println!("Ok，下载完成！请到 [{target_dir}] 查看。");
     } else {
         println!("Ok，请浏览器打开下载：{res_url}");
     }

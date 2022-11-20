@@ -1,11 +1,6 @@
 use crate::BoxResult;
 use anyhow::Result as AnyResult;
 use clap::{Arg, ArgMatches};
-use std::{
-    error::Error,
-    fmt::format,
-    path::{self, Path, PathBuf},
-};
 use tokio_test;
 
 #[derive(Debug, Default)]
@@ -15,11 +10,21 @@ pub struct DvscArgs {
     pub ori_url: String,
 }
 
-pub const download_dir: &'static str = "Downloads";
+pub const DOWNLOAD_DIR: &'static str = "Downloads";
 
 pub fn app() -> clap::Command<'static> {
-    let ori_url_arg = Arg::new("url").value_name("url").index(2);
-    let download_flag = Arg::new("download").required(false).default_value("false");
+    let ori_url_arg = Arg::new("url")
+        .value_name("url")
+        .long("url")
+        .takes_value(true)
+        .help("Set the original url for download vscode");
+    let download_flag = Arg::new("download")
+        .short('d')
+        .long("download")
+        .takes_value(true)
+        .required(false)
+        .default_value("false")
+        .help("If true, will download the file directly. Otherwise display the url for download");
 
     let cmd = clap::Command::new("dvsc")
         .arg(download_flag)
@@ -53,21 +58,21 @@ impl DvscArgs {
 }
 
 pub fn trans_url(url: String) -> String {
-    url.replace("az764295.vo.msecnd.net", get_new_dl_host())
+    url.replace("az764295.vo.msecnd.net", get_one_new_dl_host())
 }
 
-pub fn get_new_dl_host() -> &'static str {
+pub fn get_one_new_dl_host() -> &'static str {
     return "vscode.cdn.azure.cn";
 }
 
 pub async fn get_res() -> AnyResult<String> {
     let default_url = "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64";
     let resp = reqwest::get(default_url).await?;
-    let new_url = format!("https://{}{}", get_new_dl_host(), resp.url().path());
+    let new_url = format!("https://{}{}", get_one_new_dl_host(), resp.url().path());
     Ok(new_url)
 }
 
-pub async fn download_vscode(url: &str) -> AnyResult<()> {
+pub async fn download_vscode(url: &str) -> AnyResult<String> {
     let filename = std::path::Path::new(url)
         .file_name()
         .map_or("vscode.deb", |s1| s1.to_str().unwrap());
@@ -77,14 +82,14 @@ pub async fn download_vscode(url: &str) -> AnyResult<()> {
             let target = format!(
                 "{}/{}/{}",
                 home_dir.to_str().unwrap(),
-                download_dir,
+                DOWNLOAD_DIR,
                 filename
             );
             // dbg!(&target);
             std::fs::File::create(&target)?;
             let resp = reqwest::get(url).await?;
-            std::fs::write(target, resp.bytes().await?)?;
-            return Ok(());
+            std::fs::write(&target, resp.bytes().await?)?;
+            return Ok(target.to_string());
         }
         _ => {
             return Err(anyhow::format_err!("Home dir is invalid."));
